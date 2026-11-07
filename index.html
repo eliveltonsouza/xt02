@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Controle local e em nuvem de férias, calendário, funcionários e períodos aquisitivos.">
+<title>Férias da equipe — Sincronizado em Tempo Real</title>
+<style>
+:root{--ink:#19322d;--muted:#697972;--bg:#f4f6f3;--line:#e0e7df;--green:#24624d;--pale:#eaf2e9;--amber:#a36a1c;--red:#b44b42;--blue:#356f91;--shadow:0 12px 36px #19322d0a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 'Segoe UI',Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}
+button{border:1px solid var(--line);background:white;border-radius:9px;padding:9px 14px;color:var(--ink);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+button:hover{background:#f1f5ef;border-color:#bacdbd}.primary{background:var(--green);border-color:var(--green);color:white}.primary:hover{background:#194c3b;color:white}
+.danger{color:var(--red)}.quiet{border:0;background:none;padding:6px 8px}.small{font-size:12px;padding:6px 10px}
+.icon{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.shell{display:flex;min-height:100vh}.sidebar{width:232px;background:#fff;border-right:1px solid var(--line);padding:28px 18px;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;z-index:4}
+.brand{display:flex;align-items:center;gap:11px;margin:2px 8px 42px;font-size:18px;font-weight:700;letter-spacing:-.4px}
+.brand-mark{width:36px;height:36px;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center}.brand small{display:block;font-size:10px;letter-spacing:1.4px;color:var(--muted);font-weight:600}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:1.7px;color:#839087;margin:0 12px 11px}.nav-btn{width:100%;justify-content:flex-start;border:0;margin-bottom:5px;padding:11px 12px;font-weight:500;color:#5b6d63;background:none}
+.nav-btn.active{background:var(--pale);color:var(--green);font-weight:700}.nav-count{margin-left:auto;font-size:11px;background:#e6ebe2;padding:1px 7px;border-radius:7px}
+.sidebar-foot{margin-top:auto;padding:18px 10px 0;font-size:11px;color:var(--muted)}.local-indicator{display:flex;align-items:center;gap:7px;font-weight:600;font-size:12px;color:var(--green)}
+.dot{width:7px;height:7px;background:#24624d;border-radius:50%}
+.main{margin-left:232px;width:calc(100% - 232px);padding:28px 36px 50px;max-width:1800px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:30px}
+.breadcrumb{color:var(--muted);font-size:12px}.breadcrumb b{color:var(--ink);font-weight:500}.top-actions{display:flex;gap:10px;align-items:center}
+.heading{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:25px}
+h1{font-size:30px;line-height:1.2;letter-spacing:-1px;font-weight:650;margin:0 0 8px}h2{font-size:17px;margin:0 0 4px;font-weight:650}
+.sub{margin:0;color:var(--muted);font-size:13px}.eyebrow{text-transform:uppercase;font-size:10px;letter-spacing:1.6px;font-weight:700;color:var(--green);margin-bottom:8px}
+.filters{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+input,select,textarea{border:1px solid #d8e1d6;border-radius:8px;background:white;padding:10px 11px;color:var(--ink);min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid #b4d1bc;border-color:var(--green)}input[type=search]{width:270px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:24px}
+.metric{background:#fff;border:1px solid var(--line);border-radius:13px;padding:19px 20px;box-shadow:var(--shadow)}
+.metric-top{display:flex;justify-content:space-between;align-items:center;color:#68796e;font-size:12px}
+.metric-icon{background:#f0f5ec;border-radius:8px;display:grid;place-items:center;padding:7px;color:var(--green)}
+.metric-value{font-size:32px;line-height:1.3;font-weight:650;letter-spacing:-1px;margin:8px 0 5px}.metric-foot{font-size:11px;color:var(--muted)}
+.card{background:white;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}
+.card-head{padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line)}
+.card-body{padding:20px 22px}.row{display:flex;align-items:center;gap:12px}.between{justify-content:space-between}
+.avatar{display:grid;place-items:center;flex:none;border-radius:50%;width:34px;height:34px;background:#eaf0e7;color:#4b7055;font-size:11px;font-weight:700}
+.person-name{font-weight:600;font-size:13px}.person-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.green{background:#e5f1e8;color:#356e48}.badge.amber{background:#fff2d9;color:#936216}.badge.red{background:#fceae7;color:#ab4c42}.badge.blue{background:#e9f1f8;color:#386e94}.badge.slate{background:#eef1ed;color:#68766b}
+.table-toolbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line)}
+.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;text-align:left;font-size:12px}
+th{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:#758275;background:#f8faf6;font-weight:650;padding:12px 18px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:15px 18px;border-bottom:1px solid #edf1e9;vertical-align:middle}tr:last-child td{border-bottom:0}tbody tr:hover{background:#fbfcf9}
+.table-note{padding:13px 20px;font-size:11px;background:#fbfcf9;color:var(--muted);border-top:1px solid var(--line)}
+.empty{text-align:center;padding:40px 18px;color:var(--muted)}.empty strong{display:block;color:var(--ink);margin-bottom:5px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--line);gap:1px;border-top:1px solid var(--line)}
+.cal-weekday{background:#f8faf6;padding:12px;font-size:11px;color:var(--muted);text-align:center}
+.cal-day{background:white;min-height:140px;padding:9px;min-width:0}.cal-day.out{background:#f6f8f3;color:#a2ada0}
+.cal-day-num{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.day-number{width:25px;height:25px;display:grid;place-items:center;font-size:12px}.is-today .day-number{border-radius:50%;background:var(--green);color:white}
+.cal-event{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;border-left:3px solid #6b9671;background:#edf4e8;border-radius:4px;padding:4px 6px;font-size:10px;font-weight:500;color:#406246;margin:3px 0;text-align:left}
+.cal-event.planejada{background:#eef2fa;border-left-color:#728fb5;color:#436889}
+dialog{border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 100px #0a221e38;padding:0;width:min(720px,calc(100% - 24px));max-height:calc(100vh - 40px);color:var(--ink);background:#fff}
+dialog::backdrop{background:#18332b66;backdrop-filter:blur(2px)}
+.dialog-head{display:flex;justify-content:space-between;align-items:center;padding:22px 25px;border-bottom:1px solid var(--line);position:sticky;top:0;background:white;z-index:2}
+.dialog-body{padding:23px 25px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600}.field.full{grid-column:1/-1}
+.field small{font-weight:400;color:var(--muted);font-size:11px}.field input,.field select,.field textarea{font-size:13px;font-weight:400;width:100%}
+.dialog-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:17px 25px;border-top:1px solid var(--line);background:#fafbf8;position:sticky;bottom:0}
+.form-error{color:var(--red);font-size:12px;padding:10px 0;font-weight:600}
+.check-field{display:flex;gap:9px;align-items:flex-start;font-size:12px}.check-field input{width:16px;height:16px;margin-top:2px;accent-color:var(--green)}
+.form-derived{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:#f0f5eb;border-radius:10px;padding:14px;margin-top:17px;font-size:11px;color:var(--muted)}
+.form-derived strong{display:block;color:var(--ink);font-size:14px;margin-top:4px}
+#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);z-index:30;background:#193e30;color:white;padding:12px 20px;border-radius:10px;box-shadow:0 5px 25px #0002;display:none;font-size:13px}
+.notice{background:#fff9eb;border:1px solid #efe2bd;border-radius:11px;display:flex;align-items:flex-start;gap:12px;padding:14px 16px;color:#806020;margin-bottom:22px}
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}.subnav button.active{background:var(--green);color:white;border-color:var(--green)}
+.history-tag{display:flex;gap:10px;background:#edf4e9;border:1px solid #dce9d4;padding:13px 15px;border-radius:10px;font-size:12px;color:#4c6c46}
+.readonly-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.readonly-item{background:#f6f8f3;border:1px solid var(--line);border-radius:9px;padding:12px;font-size:11px;color:var(--muted)}
+.readonly-item b{display:block;font-size:13px;color:var(--ink);margin-top:4px}
+</style>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDJBHItUI_1xC0aKdwQ1NUJGrECgE-N9sY",
+  authDomain: "controleferias-ff551.firebaseapp.com",
+  projectId: "controleferias-ff551",
+  storageBucket: "controleferias-ff551.appspot.com",
+  messagingSenderId: "884128260897",
+  appId: "1:884128260897:web:7451943856739e00fd1460",
+  measurementId: "G-BBPNHVFRP0"
+};
+
+const app = initializeApp(firebaseConfig);
+const dbFirestore = getFirestore(app);
+window.docRef = doc(dbFirestore, "dados", "ferias_empresa");
+</script>
+</head>
+<body>
+<div id="app"><div style="text-align:center;padding:100px;font-size:16px;color:#24624d">Conectando ao banco de dados em tempo real...</div></div>
+<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<div id="toast" role="status" aria-live="polite" style="display: none;">Dados sincronizados.</div>
+
+<script id="seed" type="application/json">{"schema":2,"kind":"ferias-admissao","datasetId":"ferias-novo-20261106-21-pdf","savedAt":1794001377562,"baselineDate":"2026-11-06","source":{"file":"RELATÓRIO FUNCIONÁRIOS (1).PDF"},"settings":{"alertDays":60},"employees":[{"id":"e001","name":"BRUNA APARECIDA OLIVEIRA PROEZA LOURENCO","admission":"2021-01-12","baselineIndex":4},{"id":"e002","name":"CHIRLEY ARAUJO MORETE VALERIO","admission":"2013-03-01","baselineIndex":12},{"id":"e003","name":"CLAUDIMAR GOMES DE SOUZA","admission":"2018-08-06","baselineIndex":7},{"id":"e004","name":"CLEYVIENE LAVIOLA ROCHA","admission":"2020-07-01","baselineIndex":5},{"id":"e005","name":"DAVID SILVA RAULINO","admission":"2010-06-01","baselineIndex":15},{"id":"e006","name":"ELIVELTON DO CARMO DE SOUZA","admission":"2017-11-01","baselineIndex":8},{"id":"e007","name":"GABRIEL JUSTINO ALVES DE JESUS","admission":"2022-10-03","baselineIndex":3},{"id":"e008","name":"IGOR DE OLIVEIRA SOARES","admission":"2024-07-17","baselineIndex":1},{"id":"e009","name":"IOLANDA MOREIRA NETA","admission":"2018-01-02","baselineIndex":7},{"id":"e010","name":"JOAO VIANA NETO","admission":"2026-01-06","baselineIndex":0},{"id":"e011","name":"LEONARDO DE MELLO FERREIRA","admission":"2016-02-01","baselineIndex":9},{"id":"e012","name":"MARIA JOSE LACERDA","admission":"2023-08-12","baselineIndex":2},{"id":"e013","name":"MATEUS DE OLIVEIRA VIEIRA LOPES","admission":"2023-12-06","baselineIndex":1},{"id":"e014","name":"NELIO RIBEIRO","admission":"2025-10-03","baselineIndex":0},{"id":"e015","name":"PABLO OLIVEIRA SILVA","admission":"2010-04-01","baselineIndex":15},{"id":"e016","name":"RAFAELA SIMIONATO MACAO","admission":"2024-12-10","baselineIndex":0},{"id":"e017","name":"RHANYA VIANA MILAGRE","admission":"2026-09-03","baselineIndex":0},{"id":"e018","name":"THAYNARA LIMA DA SILVA AREDES","admission":"2022-09-17","baselineIndex":3},{"id":"e019","name":"VALDEVINO MARTINS DOS SANTOS JUNIOR","admission":"2009-09-01","baselineIndex":16},{"id":"e020","name":"WAGNER CASTELANI","admission":"2006-11-01","baselineIndex":19},{"id":"e021","name":"WERMITON IVAN DA SILVA","admission":"2026-06-13","baselineIndex":0}],"periods":[{"id":"e001-p4","employeeId":"e001","index":4,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e001-p5","employeeId":"e001","index":5,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e001-p6","employeeId":"e001","index":6,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e002-p12","employeeId":"e002","index":12,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e002-p13","employeeId":"e002","index":13,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e002-p14","employeeId":"e002","index":14,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e003-p7","employeeId":"e003","index":7,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e003-p8","employeeId":"e003","index":8,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e003-p9","employeeId":"e003","index":9,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e004-p5","employeeId":"e004","index":5,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e004-p6","employeeId":"e004","index":6,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e004-p7","employeeId":"e004","index":7,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e005-p15","employeeId":"e005","index":15,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e005-p16","employeeId":"e005","index":16,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e005-p17","employeeId":"e005","index":17,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e006-p8","employeeId":"e006","index":8,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e006-p9","employeeId":"e006","index":9,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e006-p10","employeeId":"e006","index":10,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e007-p3","employeeId":"e007","index":3,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":"TEM 15 DIAS EXTRA DE FERIAS ANTERIORES"},{"id":"e007-p4","employeeId":"e007","index":4,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e007-p5","employeeId":"e007","index":5,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e008-p1","employeeId":"e008","index":1,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e008-p2","employeeId":"e008","index":2,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e008-p3","employeeId":"e008","index":3,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e009-p7","employeeId":"e009","index":7,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e009-p8","employeeId":"e009","index":8,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e009-p9","employeeId":"e009","index":9,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e010-p0","employeeId":"e010","index":0,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e010-p1","employeeId":"e010","index":1,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e011-p9","employeeId":"e011","index":9,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e011-p10","employeeId":"e011","index":10,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e011-p11","employeeId":"e011","index":11,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e012-p2","employeeId":"e012","index":2,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e012-p3","employeeId":"e012","index":3,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e012-p4","employeeId":"e012","index":4,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e013-p1","employeeId":"e013","index":1,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e013-p2","employeeId":"e013","index":2,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e013-p3","employeeId":"e013","index":3,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e014-p0","employeeId":"e014","index":0,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e014-p1","employeeId":"e014","index":1,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e014-p2","employeeId":"e014","index":2,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e015-p15","employeeId":"e015","index":15,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e015-p16","employeeId":"e015","index":16,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e015-p17","employeeId":"e015","index":17,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e016-p0","employeeId":"e016","index":0,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e016-p1","employeeId":"e016","index":1,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e016-p2","employeeId":"e016","index":2,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e017-p0","employeeId":"e017","index":0,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e017-p1","employeeId":"e017","index":1,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e018-p3","employeeId":"e018","index":3,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e018-p4","employeeId":"e018","index":4,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e018-p5","employeeId":"e018","index":5,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e019-p16","employeeId":"e019","index":16,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e019-p17","employeeId":"e019","index":17,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e019-p18","employeeId":"e019","index":18,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e020-p19","employeeId":"e020","index":19,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e020-p20","employeeId":"e020","index":20,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e020-p21","employeeId":"e020","index":21,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e021-p0","employeeId":"e021","index":0,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""},{"id":"e021-p1","employeeId":"e021","index":1,"entitlement":30,"abono":0,"openingConfirmed":true,"notes":""}],"events":[{"id":"v-6b7f7274-2370-47f6-8a82-1be6e705c8f6","periodId":"e002-p12","start":"2026-10-13","end":"2026-11-11","state":"confirmada","notice":"","payment":"","notes":""},{"id":"v-cf8488be-f61a-408f-b273-e2a6be1996ca","periodId":"e019-p16","start":"2026-10-13","end":"2026-11-11","state":"confirmada","notice":"","payment":"","notes":""},{"id":"v-c309fcfa-232f-4e80-88f0-8f760adeb55f","periodId":"e014-p0","start":"2026-11-12","end":"2026-12-11","state":"planejada","notice":"","payment":"","notes":""},{"id":"v-cab3bd27-7e18-4290-ac8d-2f91900b57bb","periodId":"e005-p15","start":"2026-07-13","end":"2026-08-11","state":"realizada","notice":"","payment":"","notes":""},{"id":"v-63b51bfb-8b0d-4081-92b7-c884e44777cf","periodId":"e001-p4","start":"2026-01-12","end":"2026-01-26","state":"confirmada","notice":"","payment":"","notes":"FALTA 15 DIAS"},{"id":"v-50683e83-0651-4548-8a1e-4beca0a9e8d2","periodId":"e001-p4","start":"2026-11-07","end":"2026-11-21","state":"cancelada","notice":"","payment":"","notes":""},{"id":"v-cfa7b728-5b14-4a6f-bdc2-d8cbc1f2b7e0","periodId":"e004-p5","start":"2027-01-04","end":"2027-02-02","state":"planejada","notice":"","payment":"","notes":""},{"id":"v-d0d2c12b-ab86-486d-ae7e-66232c8621cb","periodId":"e008-p1","start":"2026-09-01","end":"2026-09-30","state":"realizada","notice":"","payment":"","notes":""},{"id":"v-1e27ded6-14d2-426a-991c-3c2e5da73065","periodId":"e009-p7","start":"2026-04-04","end":"2026-05-03","state":"realizada","notice":"","payment":"","notes":""},{"id":"v-0d762f29-ad3d-4962-8e98-194cb68df41b","periodId":"e011-p9","start":"2026-05-02","end":"2026-05-31","state":"realizada","notice":"","payment":"","notes":""},{"id":"v-582d219e-a7b0-441d-b79c-77b2f82977aa","periodId":"e012-p2","start":"2026-08-14","end":"2026-09-12","state":"realizada","notice":"","payment":"","notes":""},{"id":"v-0e6d8fc5-2d68-4a75-92fd-0af7db14e46f","periodId":"e013-p1","start":"2026-12-26","end":"2027-01-24","state":"planejada","notice":"","payment":"","notes":""},{"id":"v-0f07b823-3169-4050-ae44-43283b18d893","periodId":"e015-p15","start":"2026-04-01","end":"2026-04-30","state":"realizada","notice":"","payment":"","notes":""},{"id":"v-cf2579a9-ecf9-4108-a4e4-a132dbd6735a","periodId":"e016-p0","start":"2026-02-01","end":"2026-03-02","state":"realizada","notice":"","payment":"","notes":""},{"id":"v-a2f521b1-f66d-46f0-8513-5fac7d052dfb","periodId":"e016-p1","start":"2027-02-01","end":"2027-03-02","state":"planejada","notice":"","payment":"","notes":""},{"id":"v-4dc7337e-fd26-452c-95f8-a6bafa71b14a","periodId":"e018-p3","start":"2026-09-17","end":"2026-10-16","state":"realizada","notice":"","payment":"","notes":"REALIDADE 01/09 A 30/09"}]}</script>
+
+<script>
+(function(root){
+'use strict';
+const DAY=86400000;
+const parse=s=>new Date(s+'T12:00:00Z'),iso=d=>d.toISOString().slice(0,10);
+const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(parse(s).getTime())&&iso(parse(s))===s;
+const addDays=(s,n)=>iso(new Date(parse(s).getTime()+n*DAY));
+function addMonths(s,n){const d=parse(s),day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+n);d.setUTCDate(Math.min(day,new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate()));return iso(d);}
+const diff=(a,b)=>Math.round((parse(a)-parse(b))/DAY);
+const days=(a,b)=>validDate(a)&&validDate(b)?diff(b,a)+1:0;
+function today(){const ps=new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),v=t=>ps.find(p=>p.type===t).value;return v('year')+'-'+v('month')+'-'+v('day');}
+function completed(admission,at){if(at<admission)return 0;let n=Number(at.slice(0,4))-Number(admission.slice(0,4));if(addMonths(admission,n*12)>at)n--;return Math.max(0,n);}
+function dates(employee,index){const start=addMonths(employee.admission,index*12),acquired=addMonths(employee.admission,(index+1)*12),deadline=addDays(addMonths(employee.admission,(index+2)*12),-1);return {start,end:addDays(acquired,-1),acquired,deadline};}
+function person(db,id){return db.employees.find(e=>e.id===id);}
+function createPeriod(e,index,baselineDate){const d=dates(e,index);return{id:e.id+'-p'+index,employeeId:e.id,index,entitlement:30,abono:0,openingConfirmed:d.acquired>baselineDate,notes:''};}
+function ensurePeriods(db,at=today()){
+  let changed=false;
+  for(const e of db.employees){const through=Math.max(e.baselineIndex+1,completed(e.admission,at)+1);for(let i=e.baselineIndex;i<=through;i++){if(!db.periods.some(p=>p.employeeId===e.id&&p.index===i)){db.periods.push(createPeriod(e,i,db.baselineDate));changed=true;}}}
+  return changed;
+}
+const live=e=>e.state!=='cancelada';
+const eventsFor=(db,p)=>db.events.filter(e=>e.periodId===p.id&&live(e)).sort((a,b)=>a.start.localeCompare(b.start));
+function metrics(db,p,at=today()){
+ const d=dates(person(db,p.employeeId),p.index),events=eventsFor(db,p),recorded=events.reduce((n,e)=>n+days(e.start,e.end),0);
+ const remaining=p.entitlement-p.abono-recorded,available=p.openingConfirmed?remaining:null;
+ const finished=events.filter(e=>e.end<at).reduce((n,e)=>n+days(e.start,e.end),0),future=recorded-finished;
+ let status='A programar',tone='blue';
+ if(!p.openingConfirmed){status='A informar';tone='amber';}
+ else if(remaining<0){status='Saldo excedido';tone='red';}
+ else if(events.some(e=>e.start<=at&&e.end>=at)){status='Em férias';tone='green';}
+ else if(!remaining){status=events.some(e=>e.end>=at)?'Programado':'Concluído';tone=events.some(e=>e.end>=at)?'blue':'green';}
+ else if(d.deadline<at){status='Prazo ultrapassado';tone='red';}
+ else if(d.acquired>at){status='Em aquisição';tone='slate';}
+ else if(diff(d.deadline,at)<=db.settings.alertDays){status='Prazo próximo';tone='amber';}
+ else if(recorded>0){status='Parcial';tone='blue';}
+ return {...d,events,recorded,finished,future,remaining,available,status,tone,pending:!p.openingConfirmed};
+}
+function currentPeriods(db,at=today()){
+ return db.periods.filter(p=>{const e=person(db,p.employeeId),m=metrics(db,p,at),n=completed(e.admission,at),active=Math.max(e.baselineIndex,n-1);return p.index===active||(m.deadline<at&&(m.available===null||m.available>0));});
+}
+function eventError(db,e){
+ const p=db.periods.find(p=>p.id===e.periodId);
+ if(!p)return'Selecione um período.';
+ if(!validDate(e.start)||!validDate(e.end))return'Informe as duas datas.';
+ if(e.end<e.start)return'O fim não pode ser anterior ao início.';
+ if(days(e.start,e.end)>366)return'Confira as datas: o intervalo excede um ano.';
+ if(e.start<dates(person(db,p.employeeId),person(db,p.employeeId).baselineIndex).acquired)return'Este registro pertence a um período anterior ao novo controle, já regularizado.';
+ if(e.state!=='cancelada'&&db.events.some(x=>x.id!==e.id&&live(x)&&db.periods.find(y=>y.id===x.periodId)?.employeeId===p.employeeId&&e.start<=x.end&&e.end>=x.start))return'Já existe um intervalo sobreposto para este funcionário.';
+ return'';
+}
+function warnings(db,p,event=null,at=today()){
+ const temp=event?{...db,events:[...db.events.filter(e=>e.id!==event.id),event]}:db,m=metrics(temp,p,at),out=[];
+ if(m.remaining<0)out.push('Os intervalos e o abono ultrapassam os dias de direito.');
+ if(p.abono>Math.floor(p.entitlement/3))out.push('O abono ultrapassa um terço dos dias de direito.');
+ if(m.events.length>3)out.push('Há mais de três parcelas neste período.');
+ if(event&&live(event)&&event.start>=at&&!event.notice&&diff(event.start,at)<30)out.push('Faltam menos de 30 dias para o início e o aviso ainda não foi informado.');
+ return out;
+}
+function validateDb(db){
+ if(!db||db.schema!==2||!Array.isArray(db.employees)||!Array.isArray(db.periods)||!Array.isArray(db.events))throw Error('Estrutura de dados inválida.');
+ return db;
+}
+root.FeriasCore={iso,parse,validDate,addDays,addMonths,diff,days,today,completed,dates,person,createPeriod,ensurePeriods,live,eventsFor,metrics,currentPeriods,eventError,warnings,validateDb};
+})(globalThis);
+</script>
+
+<script type="module">
+import { getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const C = FeriasCore;
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = s => C.validDate(s)?s.split('-').reverse().join('/'):'—';
+const display = s => String(s).toLocaleLowerCase('pt-BR').replace(/(^|\s)\S/g,c=>c.toLocaleUpperCase('pt-BR'));
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const initials = s => s.split(/\s+/).slice(0,2).map(x=>x[0]).join('');
+const uid = p => p+'-'+(Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
+const paths={home:'M3 10 12 3l9 7M5 9v12h14V9M9 21v-7h6v7',calendar:'M5 5h14a2 2 0 0 1 2 2v13H3V7a2 2 0 0 1 2-2ZM7 3v4M17 3v4M3 11h18M7 15h2M13 15h2',people:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 4a4 4 0 0 1 0 8M22 21v-2a4 4 0 0 0-3-3.87M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',periods:'M4 3h16v18H4ZM8 7h8M8 12h8M8 17h5',alert:'m12 3 10 18H2L12 3ZM12 9v5M12 17h.01',download:'M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5',plus:'M12 5v14M5 12h14',close:'m6 6 12 12M6 18 18 6',clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 7v5l3 2',leaf:'M20 3C8 3 3 7 4 14c1 8 13 9 16-11ZM5 19l9-9',right:'m9 5 7 7-7 7',left:'m15 5-7 7 7 7'};
+const icon = n => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[n]||paths.periods}"/></svg>`;
+const button = (a,label,cls='',attrs='')=>`<button type="button" data-action="${a}" class="${cls}" ${attrs}>${label}</button>`;
+const badge = (s,t='slate')=>`<span class="badge ${t}">${esc(s)}</span>`;
+
+const seedData = C.validateDb(JSON.parse($('#seed').textContent));
+let db = structuredClone(seedData);
+let ui = {page:'overview',search:'',view:'current',month:C.today().slice(0,7)+'-01',employee:'all'};
+let timer, searchTimer;
+
+async function initCloudSync() {
+  const docRef = window.docRef;
+  try {
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      db = C.validateDb(snap.data());
+    } else {
+      await setDoc(docRef, db);
+    }
+  } catch(e) {
+    console.error("Erro ao carregar do Firestore:", e);
+  }
+
+  C.ensurePeriods(db);
+  render();
+
+  onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const remoteDb = C.validateDb(docSnap.data());
+      if (remoteDb.savedAt > db.savedAt) {
+        db = remoteDb;
+        C.ensurePeriods(db);
+        render();
+        toast("Atualizado em tempo real!");
+      }
+    }
+  });
+}
+
+async function saveCloud(msg='Salvo na nuvem com sucesso!') {
+  db.savedAt = Date.now();
+  C.ensurePeriods(db);
+  try {
+    await setDoc(window.docRef, db);
+    render();
+    toast(msg);
+  } catch(e) {
+    toast("Erro ao salvar na nuvem. Verifique a internet.");
+  }
+}
+
+const staff = () => db.employees.slice().sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+const person = id => C.person(db, id);
+const sorted = ps => ps.slice().sort((a,b)=>person(a.employeeId).name.localeCompare(person(b.employeeId).name,'pt-BR')||a.index-b.index);
+const match = p => !ui.search || norm(person(p.employeeId).name).includes(norm(ui.search));
+const personHtml = id => {const e=person(id);return `<div class="row"><span class="avatar">${esc(initials(e.name))}</span><div><div class="person-name">${esc(display(e.name))}</div><div class="person-meta">Admissão ${fmt(e.admission)}</div></div></div>`;};
+const range = (a,b) => `<span class="gozo-range">${fmt(a)}<br><span class="muted">a ${fmt(b)}</span></span>`;
+const title = (name,sub,action='') => `<div class="heading"><div><div class="eyebrow">Gestão de férias</div><h1>${name}</h1><p class="sub">${sub}</p></div><div class="heading-actions">${action}</div></div>`;
+const empty = (name,sub='') => `<div class="empty">${icon('calendar')}<strong>${name}</strong>${sub}</div>`;
+
+function toast(s) {
+  const t = $('#toast');
+  t.textContent = s; t.style.display = 'block';
+  clearTimeout(timer);
+  timer = setTimeout(()=> t.style.display='none', 4000);
+}
+
+function render() {
+  const pages = {overview:['Visão geral','home'],control:['Férias atuais','periods'],future:['Próximos períodos','clock'],calendar:['Calendário','calendar'],employees:['Funcionários','people']};
+  const pending = db.periods.filter(p=>!p.openingConfirmed).length;
+  
+  $('#app').innerHTML = `
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">${icon('leaf')}</span><div>Férias da equipe<small>NUVEM EM TEMPO REAL</small></div></div>
+        <div class="nav-label">ORGANIZAÇÃO</div>
+        <nav class="nav" aria-label="Navegação principal">
+          ${Object.entries(pages).map(([p,[n,i]])=>button('nav',icon(i)+n+(p==='control'&&pending?`<span class="nav-count">${pending}</span>`:''),'nav-btn '+(ui.page===p?'active':''),`data-page="${p}"`)).join('')}
+        </nav>
+        <div class="sidebar-foot">
+          <div class="local-indicator"><span class="dot"></span>Sincronizado na nuvem</div>
+          <p>Você e seu pai podem editar ao mesmo tempo.</p>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <div class="breadcrumb">Minha empresa &nbsp; / &nbsp; <b>${pages[ui.page][0]}</b></div>
+          <div class="top-actions">${button('event',icon('plus')+ 'Lançar férias','primary small')}</div>
+        </div>
+        ${({overview, control:controlPage, future:futurePage, calendar:calendarPage, employees:employeesPage}[ui.page])()}
+      </main>
+    </div>
+  `;
+}
+
+function metric(label,value,foot,ic) {
+  return `<article class="metric"><div class="metric-top"><span>${label}</span><span class="metric-icon">${icon(ic)}</span></div><div class="metric-value">${value}</div><div class="metric-foot">${foot}</div></article>`;
+}
+
+function overview() {
+  const at = C.today(), ps = sorted(C.currentPeriods(db)), inGozo = ps.filter(p=>C.metrics(db,p).acquired<=at && C.metrics(db,p).deadline>=at), pending = ps.filter(p=>!p.openingConfirmed);
+  return title('Controle de férias','Painel integrado em tempo real.',button('event',icon('plus')+'Lançar férias','primary'))+
+  `<div class="metrics">${metric('Funcionários',db.employees.length,'Cadastrados','people')}${metric('Em gozo',inGozo.length,'Atualmente de férias','leaf')}${metric('Pendentes',pending.length,'A informar situação','periods')}</div>`+
+  `<section class="card"><div class="card-head"><h2>Férias atuais da equipe</h2></div>${periodTable(ps)}</section>`;
+}
+
+function periodTable(ps) {
+  return `<div class="table-wrap"><table><thead><tr><th>Funcionário</th><th>Período aquisitivo</th><th>Período de gozo</th><th>Saldo</th><th>Situação</th><th></th></tr></thead><tbody>${ps.map(p=>{const m=C.metrics(db,p);return `<tr><td>${personHtml(p.employeeId)}</td><td>${range(m.start,m.end)}</td><td>${range(m.acquired,m.deadline)}</td><td><b>${m.available??'A informar'} dias</b></td><td>${badge(m.status,m.tone)}</td><td>${button('period',m.pending?'Informar':'Abrir','small',`data-id="${p.id}"`)}</td></tr>`;}).join('')||'<tr><td colspan="6">'+empty('Nenhum período encontrado')+'</td></tr>'}</tbody></table></div>`;
+}
+
+function controlPage() {
+  let ps = ui.view==='all' ? sorted(db.periods) : sorted(C.currentPeriods(db));
+  ps = ps.filter(match);
+  return title('Férias atuais')+`<div class="subnav">${[['current','Atuais'],['all','Todos']].map(([v,n])=>button('view',n,ui.view===v?'active':'',`data-view="${v}"`)).join('')}</div><section class="card"><div class="table-toolbar"><input type="search" id="search" placeholder="Buscar funcionário..." value="${esc(ui.search)}"></div>${periodTable(ps)}</section>`;
+}
+
+function futurePage() {
+  const ps = sorted(db.periods.filter(p=>C.metrics(db,p).acquired>C.today())).filter(match);
+  return title('Próximos períodos')+`<section class="card">${periodTable(ps)}</section>`;
+}
+
+function calendarPage() {
+  return title('Calendário')+`<section class="card" style="padding:20px"><p class="note">Calendário sincronizado. Utilize as abas de períodos para gerenciar os lançamentos.</p></section>`;
+}
+
+function employeesPage() {
+  const es = staff();
+  return title('Funcionários')+`<section class="card"><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Admissão</th></tr></thead><tbody>${es.map(e=>`<tr><td>${personHtml(e.id)}</td><td>${fmt(e.admission)}</td></tr>`).join('')}</tbody></table></div></section>`;
+}
+
+function openDialog(name,body,foot=''){$('#modal').innerHTML=`<div class="dialog-head"><h2 id="modal-title">${name}</h2>${button('close',icon('close'),'quiet')}</div>${body}${foot}`;if(!$('#modal').open)$('#modal').showModal();}
+function close(){if($('#modal').open)$('#modal').close();$('#modal').innerHTML='';}
+
+function periodDialog(id) {
+  const p = db.periods.find(x=>x.id===id), e = person(p.employeeId), m = C.metrics(db,p);
+  openDialog('Férias de '+display(e.name),`<div class="dialog-body"><div class="readonly-grid"><div class="readonly-item">Início<b>${fmt(m.start)}</b></div><div class="readonly-item">Limite<b>${fmt(m.deadline)}</b></div></div><form id="period-form" data-id="${p.id}"><div class="form-grid"><div class="field"><label>Dias de direito</label><input name="entitlement" type="number" value="${p.entitlement}" required></div><div class="field"><label>Abono</label><input name="abono" type="number" value="${p.abono}" required></div><div class="field full"><label>Observações</label><textarea name="notes">${esc(p.notes)}</textarea></div></div><div class="check-field"><input id="f-confirmed" type="checkbox" name="openingConfirmed" ${p.openingConfirmed?'checked':''}><label for="f-confirmed">Confirmar lançamento deste período</label></div></form></div>`, `<div class="dialog-foot">${button('close','Voltar')}<button class="primary" form="period-form" type="submit">Salvar na Nuvem</button></div>`);
+}
+
+function eventDialog() {
+  openDialog('Lançar férias',`<form id="event-form" class="dialog-body"><div class="form-grid"><div class="field"><label>Funcionário</label><select name="employee" required><option value="">Selecione</option>${staff().map(x=>`<option value="${x.id}">${esc(display(x.name))}</option>`).join('')}</select></div><div class="field"><label>Início</label><input name="start" type="date" required></div><div class="field"><label>Fim</label><input name="end" type="date" required></div></div></form>`, `<div class="dialog-foot">${button('close','Voltar')}<button class="primary" form="event-form" type="submit">Salvar</button></div>`);
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-action]'); if(!b) return; const a = b.dataset.action;
+  if(a==='nav'){ui.page=b.dataset.page;render();}
+  if(a==='view'){ui.view=b.dataset.view;render();}
+  if(a==='close')close();
+  if(a==='period')periodDialog(b.dataset.id);
+  if(a==='event')eventDialog();
+});
+
+document.addEventListener('submit', async ev => {
+  ev.preventDefault(); const form = ev.target, f = new FormData(form);
+  if(form.id==='period-form'){
+    const p = db.periods.find(x=>x.id===form.dataset.id);
+    p.entitlement = Number(f.get('entitlement'));
+    p.abono = Number(f.get('abono'));
+    p.notes = f.get('notes').trim();
+    p.openingConfirmed = f.has('openingConfirmed');
+    close();
+    await saveCloud('Período atualizado e sincronizado!');
+  }
+  if(form.id==='event-form'){
+    const empId = f.get('employee'), start = f.get('start'), end = f.get('end');
+    const p = db.periods.find(x=>x.employeeId===empId);
+    if(p) {
+      db.events.push({id: uid('v'), periodId: p.id, start, end, state:'planejada', notice:'', payment:'', notes:''});
+      close();
+      await saveCloud('Férias lançadas na nuvem!');
+    }
+  }
+});
+
+initCloudSync();
+})();
+</script>
+</body>
+</html>
